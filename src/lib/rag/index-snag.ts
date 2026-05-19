@@ -3,6 +3,7 @@
 // transcript updated. Cheap to run — we delete by snagId first, then
 // re-write fresh chunks.
 
+import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { getEmbeddings } from "@/lib/embeddings";
 import { getVectorService } from "@/lib/vector";
@@ -78,8 +79,12 @@ export async function indexSnag(snagId: string): Promise<number> {
     ),
   );
 
+  // Qdrant point IDs must be UInt64 or UUID — cuids are neither. Generate a
+  // fresh UUID per chunk and store it on the chunk row as `vectorId`.
+  const vectorIds = dbChunks.map(() => randomUUID());
+
   const records = dbChunks.map((dbChunk, i) => ({
-    id: dbChunk.id,
+    id: vectorIds[i],
     vector: vectors[i],
     payload: {
       tenantId,
@@ -100,12 +105,11 @@ export async function indexSnag(snagId: string): Promise<number> {
 
   await vector.upsert(records);
 
-  // Stamp vectorId on the chunk rows.
   await Promise.all(
-    dbChunks.map((c) =>
+    dbChunks.map((c, i) =>
       prisma.snagChunk.update({
         where: { id: c.id },
-        data: { vectorId: c.id },
+        data: { vectorId: vectorIds[i] },
       }),
     ),
   );

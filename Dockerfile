@@ -12,7 +12,11 @@ COPY package.json package-lock.json* ./
 # We re-fetch the ones we actually need below.
 RUN npm ci --ignore-scripts || npm install --ignore-scripts
 # sharp (transitive of @xenova/transformers) needs its native binary.
-RUN if [ -d node_modules/sharp ]; then cd node_modules/sharp && npm run install || true; fi
+# Retry — the prebuilt fetch sometimes hits transient network failures.
+RUN if [ -d node_modules/sharp ]; then \
+      cd node_modules/sharp && \
+      for i in 1 2 3; do npm run install && break; echo "sharp install attempt $i failed, retrying"; sleep 5; done; \
+    fi
 # Generate Prisma engines here so they're cached alongside node_modules.
 # binaries.prisma.sh is occasionally flaky — retry up to 6 times.
 COPY prisma ./prisma
@@ -52,13 +56,12 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static    ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public          ./public
 COPY --from=builder --chown=nextjs:nodejs /app/prisma          ./prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma     ./node_modules/prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
-# Include tsx so the seed script runs on the server.
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/tsx       ./node_modules/tsx
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin/tsx  ./node_modules/.bin/tsx
+# Copy the full node_modules from the builder so prisma CLI (with its wasm
+# sidecars) and tsx (with esbuild) work for `prisma db push` + seeding. The
+# standalone bundle already includes only the runtime deps the server needs,
+# but the deploy scripts run schema migrations and seeds inside this same
+# container — they need the full CLI tooling.
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
 ENV HOME=/app
 

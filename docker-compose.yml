@@ -68,7 +68,8 @@ services:
       - snagpin-net
 
   snagpin-qdrant:
-    image: qdrant/qdrant:v1.13.0
+    # Pin a Qdrant server within one minor of @qdrant/js-client-rest installed.
+    image: qdrant/qdrant:v1.15.4
     container_name: snagpin-qdrant
     restart: unless-stopped
     volumes:
