@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { currentTenant } from "@/lib/tenant";
+import { getCurrentProject } from "@/lib/current-project";
 import { AppShell } from "@/components/shell/AppShell";
+import { EmptyProject } from "@/components/shell/EmptyProject";
 import { cn, formatDate, priorityColor, statusColor, statusLabel } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -11,20 +12,8 @@ export default async function TasksPage({
 }: {
   searchParams: { tab?: string };
 }) {
-  const tenantId = currentTenant();
-  const project = await prisma.project.findFirst({
-    where: { tenantId },
-    orderBy: { createdAt: "asc" },
-  });
-  if (!project) {
-    return (
-      <AppShell>
-        <div className="px-6 py-12 text-center text-sm text-slate-500">
-          No project yet. Run <code>npm run seed</code>.
-        </div>
-      </AppShell>
-    );
-  }
+  const project = await getCurrentProject();
+  if (!project) return <EmptyProject />;
 
   const tab = (searchParams.tab as string) ?? "due";
 
@@ -76,7 +65,11 @@ export default async function TasksPage({
   ];
 
   return (
-    <AppShell projectName={project.name}>
+    <AppShell
+      projectId={project.id}
+      projectName={project.name}
+      projectClient={project.client}
+    >
       <div className="border-b border-slate-200 bg-white px-4 py-5 lg:px-8">
         <h1 className="text-2xl font-semibold tracking-tight text-ink-900">My Tasks</h1>
         <p className="mt-0.5 text-sm text-slate-500">Open snags across the project.</p>

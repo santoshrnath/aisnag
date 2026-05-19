@@ -30,7 +30,12 @@ export default async function DrawingPage({
   const imageUrl = await getStorage().signedUrl(drawing.storageKey, "drawings", 3600);
 
   return (
-    <AppShell projectName={drawing.project.name} bareMobile>
+    <AppShell
+      projectId={drawing.project.id}
+      projectName={drawing.project.name}
+      projectClient={drawing.project.client}
+      bareMobile
+    >
       <DrawingCanvas
         drawingId={drawing.id}
         projectId={drawing.project.id}

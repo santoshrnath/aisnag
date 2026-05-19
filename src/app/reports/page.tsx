@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import { currentTenant } from "@/lib/tenant";
+import { getCurrentProject } from "@/lib/current-project";
 import { AppShell } from "@/components/shell/AppShell";
+import { EmptyProject } from "@/components/shell/EmptyProject";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { StatusDonut } from "@/components/dashboard/StatusDonut";
 import { TradeBars } from "@/components/dashboard/TradeBars";
@@ -9,20 +10,8 @@ import { Download, PinIcon, CheckCircle2, AlertCircle } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function ReportsPage() {
-  const tenantId = currentTenant();
-  const project = await prisma.project.findFirst({
-    where: { tenantId },
-    orderBy: { createdAt: "asc" },
-  });
-  if (!project) {
-    return (
-      <AppShell>
-        <div className="px-6 py-12 text-center text-sm text-slate-500">
-          No project yet. Run <code>npm run seed</code>.
-        </div>
-      </AppShell>
-    );
-  }
+  const project = await getCurrentProject();
+  if (!project) return <EmptyProject />;
 
   const [total, byStatus, byTrade, lastWeek, byDay] = await Promise.all([
     prisma.snag.count({ where: { projectId: project.id } }),
@@ -72,7 +61,11 @@ export default async function ReportsPage() {
   const max = Math.max(...days.map((d) => d.count), 1);
 
   return (
-    <AppShell projectName={project.name}>
+    <AppShell
+      projectId={project.id}
+      projectName={project.name}
+      projectClient={project.client}
+    >
       <div className="border-b border-slate-200 bg-white px-4 py-5 lg:flex lg:items-center lg:justify-between lg:px-8">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-ink-900">Reports</h1>

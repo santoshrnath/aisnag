@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { currentTenant } from "@/lib/tenant";
+import { getCurrentProject } from "@/lib/current-project";
 import { AppShell } from "@/components/shell/AppShell";
+import { EmptyProject } from "@/components/shell/EmptyProject";
+import { EmptyDrawings } from "@/components/drawing/EmptyDrawings";
 import { cn, formatDate, statusColor, statusLabel, timeAgo } from "@/lib/utils";
 import { Filter } from "lucide-react";
 
@@ -14,20 +16,8 @@ export default async function SnagsPage({
 }: {
   searchParams: { status?: string };
 }) {
-  const tenantId = currentTenant();
-  const project = await prisma.project.findFirst({
-    where: { tenantId },
-    orderBy: { createdAt: "asc" },
-  });
-  if (!project) {
-    return (
-      <AppShell>
-        <div className="px-6 py-12 text-center text-sm text-slate-500">
-          No project yet. Run <code>npm run seed</code>.
-        </div>
-      </AppShell>
-    );
-  }
+  const project = await getCurrentProject();
+  if (!project) return <EmptyProject />;
 
   const where: any = { projectId: project.id };
   if (searchParams.status) where.status = searchParams.status;
@@ -43,8 +33,20 @@ export default async function SnagsPage({
     },
   });
 
+  // Project has no drawings → no snags. Show the friendly upload prompt.
+  const drawingCount = await prisma.drawing.count({ where: { projectId: project.id } });
+
   return (
-    <AppShell projectName={project.name}>
+    <AppShell
+      projectId={project.id}
+      projectName={project.name}
+      projectClient={project.client}
+    >
+      {drawingCount === 0 && (
+        <div className="px-4 pt-5 lg:px-8">
+          <EmptyDrawings projectId={project.id} projectName={project.name} />
+        </div>
+      )}
       <div className="border-b border-slate-200 bg-white px-4 py-5 lg:px-8">
         <div className="flex items-start justify-between">
           <div>

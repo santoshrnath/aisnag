@@ -57,7 +57,11 @@ export default async function SnagDetailPage({
   );
 
   return (
-    <AppShell projectName={snag.project.name}>
+    <AppShell
+      projectId={snag.project.id}
+      projectName={snag.project.name}
+      projectClient={snag.project.client}
+    >
       <div className="border-b border-slate-200 bg-white px-4 py-4 lg:px-8">
         <div className="flex items-start justify-between gap-3">
           <Link

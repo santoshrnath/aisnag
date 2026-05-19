@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { currentTenant } from "@/lib/tenant";
+import { getCurrentProject } from "@/lib/current-project";
 import { AppShell } from "@/components/shell/AppShell";
 import { initials } from "@/lib/utils";
 
@@ -7,13 +8,18 @@ export const dynamic = "force-dynamic";
 
 export default async function TeamPage() {
   const tenantId = currentTenant();
+  const project = await getCurrentProject();
   const users = await prisma.user.findMany({
     where: { tenantId },
     orderBy: { name: "asc" },
   });
 
   return (
-    <AppShell>
+    <AppShell
+      projectId={project?.id ?? null}
+      projectName={project?.name ?? "—"}
+      projectClient={project?.client ?? null}
+    >
       <div className="border-b border-slate-200 bg-white px-4 py-5 lg:px-8">
         <h1 className="text-2xl font-semibold tracking-tight text-ink-900">Team</h1>
         <p className="mt-0.5 text-sm text-slate-500">

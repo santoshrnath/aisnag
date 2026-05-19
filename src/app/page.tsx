@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { currentTenant } from "@/lib/tenant";
+import { getCurrentProject } from "@/lib/current-project";
 import { AppShell } from "@/components/shell/AppShell";
+import { EmptyProject } from "@/components/shell/EmptyProject";
+import { EmptyDrawings } from "@/components/drawing/EmptyDrawings";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { StatusDonut } from "@/components/dashboard/StatusDonut";
 import { TradeBars } from "@/components/dashboard/TradeBars";
@@ -23,12 +24,7 @@ import {
 export const dynamic = "force-dynamic";
 
 async function loadDashboard() {
-  const tenantId = currentTenant();
-
-  let project = await prisma.project.findFirst({
-    where: { tenantId },
-    orderBy: { createdAt: "asc" },
-  });
+  const project = await getCurrentProject();
   if (!project) return null;
 
   const [byStatus, byTrade, total, sinceLastWeek, recent, openSnags, drawings] =
@@ -99,7 +95,7 @@ async function loadDashboard() {
 
 export default async function DashboardPage() {
   const data = await loadDashboard();
-  if (!data) return <SeedPrompt />;
+  if (!data) return <EmptyProject />;
 
   const { project, byStatus, byTrade, total, sinceLastWeek, recent, openSnags, drawings } = data;
 
@@ -108,9 +104,14 @@ export default async function DashboardPage() {
   const inProgress = count("IN_PROGRESS");
   const ready = count("READY_FOR_INSPECTION");
   const closed = count("CLOSED");
+  const isFreshProject = drawings.length === 0 && total === 0;
 
   return (
-    <AppShell projectName={project.name}>
+    <AppShell
+      projectId={project.id}
+      projectName={project.name}
+      projectClient={project.client}
+    >
       {/* Header */}
       <div className="flex flex-col gap-4 border-b border-slate-200 bg-white px-4 py-5 sm:flex-row sm:items-center sm:justify-between lg:px-8">
         <div>
@@ -143,8 +144,12 @@ export default async function DashboardPage() {
 
       {/* Body */}
       <div className="space-y-6 px-4 py-5 lg:px-8">
-        {/* First-visit hint (dismissable, once per browser) */}
-        <OnboardingHint />
+        {/* Fresh project? Push the user straight at "upload your first drawing". */}
+        {isFreshProject ? (
+          <EmptyDrawings projectId={project.id} projectName={project.name} />
+        ) : (
+          <OnboardingHint />
+        )}
 
         {/* Stat cards — 1 col mobile, 2 col tablet, 4 col desktop */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
@@ -260,30 +265,3 @@ function Panel({
   );
 }
 
-function SeedPrompt() {
-  return (
-    <AppShell projectName="—">
-      <div className="mx-auto max-w-2xl px-6 py-16 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
-          <PinIcon className="h-7 w-7" />
-        </div>
-        <h1 className="text-2xl font-semibold tracking-tight text-ink-900">
-          Welcome to SnagPin
-        </h1>
-        <p className="mt-2 text-sm text-slate-600">
-          No project found yet. Run <code className="rounded bg-slate-100 px-1.5 py-0.5 text-[12px]">npm run seed</code> from
-          the project root, or follow the README to deploy. The seed sets up a
-          Skyline Residences demo project with three drawings and ~30 snags.
-        </p>
-        <div className="mt-6 flex justify-center gap-2 text-sm">
-          <Link
-            href="https://github.com/santoshrnath/aisnag"
-            className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 font-medium text-slate-700 hover:bg-slate-50"
-          >
-            View on GitHub
-          </Link>
-        </div>
-      </div>
-    </AppShell>
-  );
-}

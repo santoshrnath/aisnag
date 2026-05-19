@@ -1,26 +1,16 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { currentTenant } from "@/lib/tenant";
+import { getCurrentProject } from "@/lib/current-project";
 import { AppShell } from "@/components/shell/AppShell";
+import { EmptyProject } from "@/components/shell/EmptyProject";
+import { EmptyDrawings } from "@/components/drawing/EmptyDrawings";
 import { ArrowLeft, MapPin } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewSnagPage() {
-  const tenantId = currentTenant();
-  const project = await prisma.project.findFirst({
-    where: { tenantId },
-    orderBy: { createdAt: "asc" },
-  });
-  if (!project) {
-    return (
-      <AppShell>
-        <div className="px-6 py-12 text-center text-sm text-slate-500">
-          No project yet. Run <code>npm run seed</code>.
-        </div>
-      </AppShell>
-    );
-  }
+  const project = await getCurrentProject();
+  if (!project) return <EmptyProject />;
 
   const drawings = await prisma.drawing.findMany({
     where: { projectId: project.id },
@@ -28,7 +18,11 @@ export default async function NewSnagPage() {
   });
 
   return (
-    <AppShell projectName={project.name}>
+    <AppShell
+      projectId={project.id}
+      projectName={project.name}
+      projectClient={project.client}
+    >
       <div className="border-b border-slate-200 bg-white px-4 py-5 lg:px-8">
         <div className="flex items-start gap-3">
           <Link
@@ -45,6 +39,12 @@ export default async function NewSnagPage() {
           </div>
         </div>
       </div>
+
+      {drawings.length === 0 && (
+        <div className="px-4 py-5 lg:px-8">
+          <EmptyDrawings projectId={project.id} projectName={project.name} />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-3 px-4 py-5 sm:grid-cols-2 lg:grid-cols-3 lg:px-8">
         {drawings.map((d) => (

@@ -1,23 +1,38 @@
+import { prisma } from "@/lib/prisma";
+import { getCurrentProject } from "@/lib/current-project";
 import { AppShell } from "@/components/shell/AppShell";
-import { Settings as SettingsIcon } from "lucide-react";
+import { EmptyProject } from "@/components/shell/EmptyProject";
+import { SettingsClient } from "@/app/settings/SettingsClient";
 
-export default function SettingsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function SettingsPage() {
+  const project = await getCurrentProject();
+  if (!project) return <EmptyProject />;
+
+  const trades = await prisma.trade.findMany({
+    where: { projectId: project.id },
+    orderBy: { name: "asc" },
+  });
+
   return (
-    <AppShell>
-      <div className="border-b border-slate-200 bg-white px-4 py-5 lg:px-8">
-        <h1 className="text-2xl font-semibold tracking-tight text-ink-900">Settings</h1>
-        <p className="mt-0.5 text-sm text-slate-500">Project and account configuration.</p>
-      </div>
-      <div className="mx-auto max-w-md px-6 py-12 text-center text-sm text-slate-500">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
-          <SettingsIcon className="h-7 w-7" />
-        </div>
-        <p>
-          The POC is single-tenant with sensible defaults. Multi-tenant
-          configuration, project-level trade lists and roles wire in over the
-          existing data model.
-        </p>
-      </div>
+    <AppShell
+      projectId={project.id}
+      projectName={project.name}
+      projectClient={project.client}
+    >
+      <SettingsClient
+        project={{
+          id: project.id,
+          name: project.name,
+          client: project.client,
+          developer: project.developer,
+          contractor: project.contractor,
+          location: project.location,
+          status: project.status,
+        }}
+        trades={trades.map((t) => ({ id: t.id, name: t.name }))}
+      />
     </AppShell>
   );
 }

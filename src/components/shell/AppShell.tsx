@@ -19,9 +19,11 @@ import {
   Search,
   Bell,
   MoreHorizontal,
+  FolderOpen,
 } from "lucide-react";
 import { cn, initials } from "@/lib/utils";
 import { AuthBadge } from "@/components/shell/AuthBadge";
+import { ProjectSwitcher } from "@/components/shell/ProjectSwitcher";
 
 interface NavItem {
   href: string;
@@ -38,6 +40,7 @@ const NAV: NavItem[] = [
   { href: "/reports", label: "Reports", icon: BarChart3 },
   { href: "/inspections", label: "Inspections", icon: ClipboardCheck },
   { href: "/team", label: "Team", icon: Users },
+  { href: "/projects", label: "Projects", icon: FolderOpen },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -50,7 +53,9 @@ const MOBILE_TABS: NavItem[] = [
 
 interface AppShellProps {
   children: ReactNode;
+  projectId?: string | null;
   projectName?: string;
+  projectClient?: string | null;
   userName?: string;
   userRole?: string;
   /** Hide the chrome (used on full-bleed pages like the drawing canvas) */
@@ -59,7 +64,9 @@ interface AppShellProps {
 
 export function AppShell({
   children,
+  projectId = null,
   projectName = "Skyline Residences",
+  projectClient = null,
   userName = "Arjun Sharma",
   userRole = "Site Engineer",
   bareMobile = false,
@@ -74,13 +81,12 @@ export function AppShell({
         <div className="mb-6 flex items-center gap-2 px-2">
           <Logo />
         </div>
-        <div className="mb-5 rounded-xl bg-slate-50 px-3 py-2.5">
-          <div className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
-            Project
-          </div>
-          <div className="mt-0.5 truncate text-sm font-semibold text-ink-900">
-            {projectName}
-          </div>
+        <div className="mb-5">
+          <ProjectSwitcher
+            currentId={projectId}
+            currentName={projectName}
+            currentClient={projectClient}
+          />
         </div>
         <nav className="flex-1 space-y-0.5">
           {NAV.map((item) => {
@@ -188,13 +194,12 @@ export function AppShell({
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="mb-4 rounded-xl bg-slate-50 px-3 py-2.5">
-              <div className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
-                Project
-              </div>
-              <div className="mt-0.5 truncate text-sm font-semibold text-ink-900">
-                {projectName}
-              </div>
+            <div className="mb-4">
+              <ProjectSwitcher
+                currentId={projectId}
+                currentName={projectName}
+                currentClient={projectClient}
+              />
             </div>
             <nav className="space-y-0.5">
               {NAV.map((item) => {
