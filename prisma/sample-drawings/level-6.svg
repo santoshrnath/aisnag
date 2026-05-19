@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="0.5"/>
+    </pattern>
+    <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="#cbd5e1" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="800" fill="#fafafa"/>
+  <rect width="1200" height="800" fill="url(#grid)"/>
+
+  <g font-family="ui-sans-serif, Inter, sans-serif" fill="#334155">
+    <text x="40" y="44" font-size="22" font-weight="600">Tower A — Level 6 Floor Plan</text>
+    <text x="40" y="66" font-size="12" fill="#64748b">Skyline Residences • Scale 1:100 • DWG-A-601</text>
+  </g>
+
+  <g stroke="#1e293b" fill="none">
+    <rect x="100" y="120" width="1000" height="600" stroke-width="6"/>
+  </g>
+
+  <g stroke="#334155" stroke-width="3" fill="white">
+    <rect x="100" y="380" width="1000" height="80" fill="#f1f5f9"/>
+
+    <rect x="100" y="120" width="280" height="260"/>
+    <line x1="240" y1="120" x2="240" y2="260" stroke-width="2"/>
+    <line x1="240" y1="260" x2="380" y2="260" stroke-width="2"/>
+    <text x="120" y="160" font-size="14" font-weight="600" fill="#475569">Apt 601</text>
+    <text x="120" y="178" font-size="11" fill="#64748b">Living</text>
+    <text x="260" y="160" font-size="11" fill="#64748b">Bedroom</text>
+    <text x="260" y="290" font-size="11" fill="#64748b">Bath</text>
+
+    <rect x="380" y="120" width="380" height="260"/>
+    <line x1="560" y1="120" x2="560" y2="240" stroke-width="2"/>
+    <line x1="380" y1="240" x2="560" y2="240" stroke-width="2"/>
+    <text x="400" y="160" font-size="14" font-weight="600" fill="#475569">Apt 602 (3BR)</text>
+    <text x="400" y="178" font-size="11" fill="#64748b">Living + Kitchen</text>
+    <text x="580" y="160" font-size="11" fill="#64748b">Master Bed</text>
+    <text x="400" y="270" font-size="11" fill="#64748b">Bath 1</text>
+    <text x="580" y="270" font-size="11" fill="#64748b">Bed 2</text>
+
+    <rect x="760" y="120" width="340" height="260"/>
+    <line x1="940" y1="120" x2="940" y2="260" stroke-width="2"/>
+    <text x="780" y="160" font-size="14" font-weight="600" fill="#475569">Apt 603</text>
+    <text x="780" y="178" font-size="11" fill="#64748b">Living</text>
+    <text x="960" y="160" font-size="11" fill="#64748b">Master</text>
+
+    <rect x="100" y="460" width="320" height="260"/>
+    <text x="120" y="500" font-size="14" font-weight="600" fill="#475569">Apt 604</text>
+    <text x="120" y="518" font-size="11" fill="#64748b">2BR</text>
+
+    <rect x="420" y="460" width="360" height="260"/>
+    <line x1="600" y1="460" x2="600" y2="600" stroke-width="2"/>
+    <text x="440" y="500" font-size="14" font-weight="600" fill="#475569">Apt 605</text>
+    <text x="440" y="518" font-size="11" fill="#64748b">Studio</text>
+    <text x="620" y="500" font-size="11" fill="#64748b">Bath</text>
+
+    <rect x="780" y="460" width="320" height="260"/>
+    <text x="800" y="500" font-size="14" font-weight="600" fill="#475569">Apt 606</text>
+    <text x="800" y="518" font-size="11" fill="#64748b">Corner</text>
+  </g>
+
+  <g>
+    <rect x="540" y="380" width="120" height="80" fill="url(#hatch)" stroke="#334155" stroke-width="2"/>
+    <text x="585" y="425" font-size="11" fill="#475569" font-weight="600">LIFT / STAIRS</text>
+  </g>
+
+  <g stroke="#94a3b8" fill="none">
+    <path d="M 260 380 a 40 40 0 0 1 -40 -40" stroke-width="1.5"/>
+    <path d="M 540 380 a 40 40 0 0 1 -40 -40" stroke-width="1.5"/>
+    <path d="M 800 380 a 40 40 0 0 1 -40 -40" stroke-width="1.5"/>
+    <path d="M 260 460 a 40 40 0 0 0 -40 40" stroke-width="1.5"/>
+    <path d="M 540 460 a 40 40 0 0 0 -40 40" stroke-width="1.5"/>
+    <path d="M 800 460 a 40 40 0 0 0 -40 40" stroke-width="1.5"/>
+  </g>
+
+  <g transform="translate(1080, 720)" font-family="Inter">
+    <circle cx="0" cy="0" r="22" fill="white" stroke="#334155" stroke-width="1.5"/>
+    <polygon points="0,-16 6,8 0,3 -6,8" fill="#334155"/>
+    <text x="0" y="-26" text-anchor="middle" font-size="10" fill="#475569" font-weight="600">N</text>
+  </g>
+</svg>

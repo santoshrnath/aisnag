@@ -1,0 +1,343 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// SnagPin — Prisma schema
+// ─────────────────────────────────────────────────────────────────────────────
+// Models:
+//   Project, Drawing, Trade, User, Snag, SnagPhoto, SnagVoiceNote,
+//   SnagComment, SnagStatusEvent, SnagChunk (RAG)
+// Tenant-scoped via `tenantId` on every row. Single-tenant today,
+// multi-tenant tomorrow with no schema migration.
+// ─────────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SnagStatus {
+  OPEN
+  IN_PROGRESS
+  READY_FOR_INSPECTION
+  CLOSED
+  REOPENED
+  CANCELLED
+}
+
+enum SnagSeverity {
+  COSMETIC
+  FUNCTIONAL
+  SAFETY
+}
+
+enum SnagPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum UserRole {
+  ENGINEER
+  INSPECTOR
+  SUBCONTRACTOR
+  CLIENT
+  MANAGER
+  ADMIN
+}
+
+enum DrawingType {
+  FLOOR_PLAN
+  MEP
+  CEILING
+  SECTION
+  SITE
+  OTHER
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Core
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Project {
+  id          String   @id @default(cuid())
+  tenantId    String   @default("default")
+
+  name        String
+  client      String?
+  developer   String?
+  contractor  String?
+  location    String?
+  status      String   @default("active") // active, handover, dlp, closed
+  coverColor  String?  // hex, optional brand accent for project cards
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  drawings    Drawing[]
+  snags       Snag[]
+  trades      Trade[]
+  members     ProjectMember[]
+
+  @@index([tenantId])
+}
+
+model Trade {
+  id          String   @id @default(cuid())
+  tenantId    String   @default("default")
+  projectId   String
+
+  name        String   // MEP, Civil, Finishing, Joinery, Painting, Flooring, Plumbing, Electrical, Other
+  color       String?  // hex for chips
+  subcontractor String?
+  contact     String?
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  snags       Snag[]
+
+  @@unique([projectId, name])
+  @@index([tenantId])
+  @@index([projectId])
+}
+
+model User {
+  id          String   @id @default(cuid())
+  tenantId    String   @default("default")
+
+  email       String   @unique
+  name        String
+  role        UserRole @default(ENGINEER)
+  avatarUrl   String?
+  phone       String?
+
+  createdAt   DateTime @default(now())
+
+  raisedSnags    Snag[] @relation("RaisedBy")
+  assignedSnags  Snag[] @relation("AssignedTo")
+  comments       SnagComment[]
+  statusEvents   SnagStatusEvent[]
+  memberships    ProjectMember[]
+
+  @@index([tenantId])
+}
+
+model ProjectMember {
+  id          String   @id @default(cuid())
+  tenantId    String   @default("default")
+  projectId   String
+  userId      String
+  role        UserRole @default(ENGINEER)
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([tenantId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Drawings — the canvas snags are dropped onto
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Drawing {
+  id          String      @id @default(cuid())
+  tenantId    String      @default("default")
+  projectId   String
+
+  name        String
+  level       String?     // "Level 5", "Roof", "Site"
+  sheetNo     String?
+  type        DrawingType @default(FLOOR_PLAN)
+  version     String      @default("V1")
+
+  // Source file (PDF, PNG, JPG). For the POC we render PNG/JPG directly.
+  // PDFs are converted to PNG at upload time (server-side) and referenced here.
+  storageKey  String      // S3 / local key for the rendered image
+  mimeType    String      @default("image/png")
+  width       Int?        // pixel dimensions of the rendered image
+  height      Int?
+  sizeBytes   Int?
+
+  // Optional room metadata for snap-to-room (post-MVP)
+  rooms       Json?       // [{ name, polygon: [[x,y],...] }]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  snags       Snag[]
+
+  @@index([tenantId])
+  @@index([projectId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Snags — the core entity
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Snag {
+  id          String       @id @default(cuid())
+  tenantId    String       @default("default")
+  projectId   String
+  drawingId   String
+
+  // Public ID like "SN-128" — human-readable, project-scoped
+  code        String
+
+  // Pin location in normalized 0..1 coordinates so it works at any zoom.
+  pinX        Float
+  pinY        Float
+
+  // Optional anchor info
+  room        String?
+  area        String?
+
+  // The defect
+  title       String
+  description String?      @db.Text
+  severity    SnagSeverity @default(FUNCTIONAL)
+  priority    SnagPriority @default(MEDIUM)
+  status      SnagStatus   @default(OPEN)
+
+  // Assignment
+  tradeId     String?
+  raisedById  String?
+  assignedToId String?
+  dueDate     DateTime?
+
+  // Closure
+  closedAt    DateTime?
+  closedById  String?
+
+  // AI assistance (set when photo-to-snag or voice-to-snag ran)
+  aiGenerated Boolean   @default(false)
+  aiSummary   String?   @db.Text
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project     Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  drawing     Drawing           @relation(fields: [drawingId], references: [id], onDelete: Cascade)
+  trade       Trade?            @relation(fields: [tradeId], references: [id], onDelete: SetNull)
+  raisedBy    User?             @relation("RaisedBy", fields: [raisedById], references: [id], onDelete: SetNull)
+  assignedTo  User?             @relation("AssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  photos      SnagPhoto[]
+  voiceNotes  SnagVoiceNote[]
+  comments    SnagComment[]
+  events      SnagStatusEvent[]
+  chunks      SnagChunk[]
+
+  @@unique([projectId, code])
+  @@index([tenantId])
+  @@index([projectId])
+  @@index([drawingId])
+  @@index([status])
+  @@index([tradeId])
+  @@index([assignedToId])
+}
+
+model SnagPhoto {
+  id          String   @id @default(cuid())
+  tenantId    String   @default("default")
+  snagId      String
+
+  storageKey  String   // S3 / local key
+  mimeType    String   @default("image/jpeg")
+  width       Int?
+  height      Int?
+  sizeBytes   Int?
+  kind        String   @default("evidence") // "evidence" | "closure"
+  caption     String?
+
+  uploadedAt  DateTime @default(now())
+
+  snag        Snag     @relation(fields: [snagId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([snagId])
+}
+
+model SnagVoiceNote {
+  id          String   @id @default(cuid())
+  tenantId    String   @default("default")
+  snagId      String
+
+  storageKey  String
+  mimeType    String   @default("audio/webm")
+  durationMs  Int?
+  transcript  String?  @db.Text
+
+  uploadedAt  DateTime @default(now())
+
+  snag        Snag     @relation(fields: [snagId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([snagId])
+}
+
+model SnagComment {
+  id          String   @id @default(cuid())
+  tenantId    String   @default("default")
+  snagId      String
+  authorId    String?
+
+  text        String   @db.Text
+
+  createdAt   DateTime @default(now())
+
+  snag        Snag     @relation(fields: [snagId], references: [id], onDelete: Cascade)
+  author      User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([snagId])
+}
+
+model SnagStatusEvent {
+  id          String     @id @default(cuid())
+  tenantId    String     @default("default")
+  snagId      String
+  actorId     String?
+
+  fromStatus  SnagStatus?
+  toStatus    SnagStatus
+  note        String?    @db.Text
+  evidenceKey String?
+
+  createdAt   DateTime   @default(now())
+
+  snag        Snag       @relation(fields: [snagId], references: [id], onDelete: Cascade)
+  actor       User?      @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([snagId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RAG — snag chunks for semantic search
+// ─────────────────────────────────────────────────────────────────────────────
+// Snags are short, but the searchable corpus expands when we include
+// description + comments + transcripts. We chunk per snag (one chunk per
+// distinct piece of evidence) and embed each, so semantic queries can hit
+// the right grain ("paint defect near window in Tower B floor 5").
+// ─────────────────────────────────────────────────────────────────────────────
+
+model SnagChunk {
+  id          String   @id @default(cuid())
+  tenantId    String   @default("default")
+  snagId      String
+
+  source      String   // "title+description" | "comment" | "voice-transcript" | "ai-summary"
+  text        String   @db.Text
+  vectorId    String?  // pointer into Qdrant
+  tokenCount  Int?
+  metadata    Json?    // { projectId, drawingId, trade, severity, status, room }
+
+  createdAt   DateTime @default(now())
+
+  snag        Snag     @relation(fields: [snagId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([snagId])
+}

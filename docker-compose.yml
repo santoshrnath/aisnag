@@ -1,0 +1,87 @@
+# =============================================================================
+# SnagPin — production compose
+# =============================================================================
+# Spins up:
+#   - snagpin-app    (Next.js, host port ${SNAGPIN_PORT:-3080})
+#   - snagpin-db     (Postgres 17 with pgvector — also usable as vector fallback)
+#   - snagpin-qdrant (Qdrant vector DB)
+#
+# On Hetzner: routed by the shared Coolify-managed Traefik network at
+#   https://${PUBLIC_HOSTNAME:-aisnag.oneplaceplatform.com}.
+# Locally:    just `docker compose up` and visit http://localhost:${SNAGPIN_PORT}.
+# =============================================================================
+services:
+  snagpin-app:
+    build:
+      context: .
+      network: host
+    container_name: snagpin-app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://snagpin:snagpin@snagpin-db:5432/snagpin?schema=public
+      QDRANT_URL: http://snagpin-qdrant:6333
+    ports:
+      - "${SNAGPIN_PORT:-3080}:3000"
+    depends_on:
+      snagpin-db:
+        condition: service_healthy
+      snagpin-qdrant:
+        condition: service_started
+    volumes:
+      # Persist locally-stored uploads across container restarts. Set
+      # STORAGE_PROVIDER=s3 in .env to bypass this and push to Hetzner.
+      - snagpin-storage:/app/storage-local
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.middlewares.snagpin-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.snagpin-http.entryPoints=http"
+      - "traefik.http.routers.snagpin-http.rule=Host(`${PUBLIC_HOSTNAME:-aisnag.oneplaceplatform.com}`)"
+      - "traefik.http.routers.snagpin-http.middlewares=snagpin-redirect"
+      - "traefik.http.routers.snagpin-https.entryPoints=https"
+      - "traefik.http.routers.snagpin-https.rule=Host(`${PUBLIC_HOSTNAME:-aisnag.oneplaceplatform.com}`)"
+      - "traefik.http.routers.snagpin-https.tls=true"
+      - "traefik.http.routers.snagpin-https.tls.certresolver=letsencrypt"
+      - "traefik.http.services.snagpin.loadbalancer.server.port=3000"
+    networks:
+      - snagpin-net
+      - coolify
+
+  snagpin-db:
+    image: pgvector/pgvector:pg17
+    container_name: snagpin-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: snagpin
+      POSTGRES_PASSWORD: snagpin
+      POSTGRES_DB: snagpin
+    volumes:
+      - snagpin-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U snagpin"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - snagpin-net
+
+  snagpin-qdrant:
+    image: qdrant/qdrant:v1.13.0
+    container_name: snagpin-qdrant
+    restart: unless-stopped
+    volumes:
+      - snagpin-qdrant-data:/qdrant/storage
+    networks:
+      - snagpin-net
+
+volumes:
+  snagpin-db-data:
+  snagpin-qdrant-data:
+  snagpin-storage:
+
+networks:
+  snagpin-net:
+  coolify:
+    external: true

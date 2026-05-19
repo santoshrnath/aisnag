@@ -1,0 +1,17 @@
+{
+  "name": "SnagPin",
+  "short_name": "SnagPin",
+  "description": "Mobile-first snagging app for construction.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#7c3aed",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

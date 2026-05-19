@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* SnagPin global styles ----------------------------------------------------- */
+
+:root {
+  --safe-bottom: env(safe-area-inset-bottom);
+  --safe-top: env(safe-area-inset-top);
+}
+
+html, body {
+  background: #f8fafc;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Calm scrollbars on desktop. */
+@media (pointer: fine) {
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+}
+
+/* Prevent iOS double-tap zoom on tappable UI. */
+button, [role="button"] { touch-action: manipulation; }
+
+/* Pin animation marker used on the drawing canvas. */
+.pin-pulse::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.25;
+  animation: pin-pulse 1.6s ease-out infinite;
+}
+@keyframes pin-pulse {
+  0% { transform: scale(0.6); opacity: 0.45; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+/* No tap highlight. */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Safe-area bottom padding for mobile sheets. */
+.pb-safe { padding-bottom: max(1rem, var(--safe-bottom)); }
+.pt-safe { padding-top: max(0.75rem, var(--safe-top)); }
+
+/* Subtle bg dotted pattern for empty drawing placeholder. */
+.bg-dotted {
+  background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* Hide native number-input spinners. */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] { -moz-appearance: textfield; }
