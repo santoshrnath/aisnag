@@ -35,6 +35,26 @@ interface SnagSeed {
   comments?: { author: string; text: string; daysAgo: number }[];
 }
 
+// Map snag-title keywords → sample defect photos (in prisma/sample-photos).
+// Snags with no keyword hit get the generic "paint-uneven" photo as a
+// fallback so every defect has at least one image to show.
+const PHOTO_RULES: { match: RegExp; files: string[] }[] = [
+  { match: /paint|painted|grout/i, files: ["paint-uneven.svg"] },
+  { match: /tile|crack|chip/i, files: ["tile-chipped.svg"] },
+  { match: /socket|outlet|switch|wire|electric|exit sign|light/i, files: ["socket.svg"] },
+  { match: /door|handle|hinge|window catch|wardrobe/i, files: ["door-handle.svg"] },
+  { match: /damp|ceiling|stain|leak from above/i, files: ["damp-patch.svg"] },
+  { match: /skirting|gap|trim/i, files: ["skirting-gap.svg"] },
+  { match: /tap|leak|drain|plumbing|sink|drip|water/i, files: ["tap-leak.svg"] },
+];
+
+function photosForTitle(title: string): string[] {
+  for (const r of PHOTO_RULES) {
+    if (r.match.test(title)) return r.files;
+  }
+  return ["paint-uneven.svg"];
+}
+
 const USERS = [
   { name: "Arjun Sharma", email: "arjun@snagpin.demo", role: UserRole.ENGINEER },
   { name: "Riya Kapoor", email: "riya@snagpin.demo", role: UserRole.ENGINEER },
@@ -661,6 +681,27 @@ async function main() {
     console.log(`  • ${name} (${(buf.length / 1024).toFixed(1)} KB)`);
   }
 
+  console.log("→ Pre-loading sample defect photos");
+  const { photoKey } = await import("../src/lib/storage");
+  const photosDir = path.resolve(process.cwd(), "prisma", "sample-photos");
+  const photoCache: Record<string, Buffer> = {};
+  for (const fname of [
+    "paint-uneven.svg",
+    "tile-chipped.svg",
+    "socket.svg",
+    "door-handle.svg",
+    "damp-patch.svg",
+    "skirting-gap.svg",
+    "tap-leak.svg",
+    "closure-fixed.svg",
+  ]) {
+    try {
+      photoCache[fname] = await fs.readFile(path.join(photosDir, fname));
+    } catch {
+      console.warn(`  ! missing sample photo ${fname}`);
+    }
+  }
+
   console.log("→ Creating snags");
   const now = Date.now();
   const day = 24 * 60 * 60 * 1000;
@@ -733,17 +774,78 @@ async function main() {
       });
     }
 
-    // Voice transcripts (no actual audio file for seed — transcript only)
+    // Voice transcripts — store transcript only, no audio file (the seed
+    // doesn't have real audio). We store a non-empty storage key so the UI
+    // doesn't render a broken audio player; the SnagDetail component shows
+    // the transcript as a quote when there's no playable URL.
     if (s.voice) {
       await prisma.snagVoiceNote.create({
         data: {
           tenantId: TENANT,
           snagId: snag.id,
-          storageKey: "", // no audio in seed
+          storageKey: "__seed_transcript_only__",
           mimeType: "audio/webm",
           transcript: s.voice,
         },
       });
+    }
+
+    // Sample photos
+    const photoFiles = photosForTitle(s.title);
+    for (let pi = 0; pi < photoFiles.length; pi += 1) {
+      const fname = photoFiles[pi];
+      const buf = photoCache[fname];
+      if (!buf) continue;
+      const key = photoKey({
+        tenantId: TENANT,
+        projectId: project.id,
+        snagId: snag.id,
+        fileName: `evidence-${pi + 1}-${fname}`,
+      });
+      await storage.put({
+        bucket: "photos",
+        key,
+        body: buf,
+        contentType: "image/svg+xml",
+      });
+      await prisma.snagPhoto.create({
+        data: {
+          tenantId: TENANT,
+          snagId: snag.id,
+          storageKey: key,
+          mimeType: "image/svg+xml",
+          sizeBytes: buf.length,
+          kind: "evidence",
+        },
+      });
+    }
+    // Closure photo for snags that are closed or ready
+    if (s.status === "CLOSED" || s.status === "READY_FOR_INSPECTION") {
+      const buf = photoCache["closure-fixed.svg"];
+      if (buf) {
+        const key = photoKey({
+          tenantId: TENANT,
+          projectId: project.id,
+          snagId: snag.id,
+          fileName: `closure-closure-fixed.svg`,
+        });
+        await storage.put({
+          bucket: "photos",
+          key,
+          body: buf,
+          contentType: "image/svg+xml",
+        });
+        await prisma.snagPhoto.create({
+          data: {
+            tenantId: TENANT,
+            snagId: snag.id,
+            storageKey: key,
+            mimeType: "image/svg+xml",
+            sizeBytes: buf.length,
+            kind: "closure",
+          },
+        });
+      }
     }
   }
 

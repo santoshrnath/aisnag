@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <radialGradient id="g" cx="0.5" cy="0.5" r="0.7">
+      <stop offset="0%" stop-color="#f7faf3"/>
+      <stop offset="100%" stop-color="#dde6d3"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#g)"/>
+  <!-- A clean tile / surface -->
+  <g fill="#f4f7ef" stroke="#a9b2a0" stroke-width="2">
+    <rect x="40" y="40" width="720" height="720" rx="6"/>
+  </g>
+  <!-- Subtle clean grout lines / panels -->
+  <g stroke="#cdd5c5" stroke-width="1.5">
+    <line x1="40" y1="280" x2="760" y2="280"/>
+    <line x1="40" y1="520" x2="760" y2="520"/>
+    <line x1="280" y1="40" x2="280" y2="760"/>
+    <line x1="520" y1="40" x2="520" y2="760"/>
+  </g>
+  <!-- Big green check (closure) -->
+  <g transform="translate(400 420)">
+    <circle r="130" fill="#10b981" opacity="0.15"/>
+    <circle r="95" fill="#10b981"/>
+    <polyline points="-40,5 -10,40 50,-30" stroke="white" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+  <text x="400" y="640" text-anchor="middle" font-family="ui-sans-serif" font-size="26" fill="#0a6b50" font-weight="600">Fixed &amp; ready for inspection</text>
+</svg>

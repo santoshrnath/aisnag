@@ -1,6 +1,9 @@
+"use client";
+
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 
 interface StatCardProps {
   label: string;
@@ -36,7 +39,9 @@ export function StatCard({
           </div>
         )}
       </div>
-      <div className="text-3xl font-semibold tracking-tight text-ink-900">{value}</div>
+      <div className="text-3xl font-semibold tracking-tight text-ink-900">
+        {typeof value === "number" ? <AnimatedNumber value={value} /> : value}
+      </div>
       {delta != null && (
         <div className="flex items-center gap-1 text-xs">
           {positive ? (

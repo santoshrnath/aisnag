@@ -14,6 +14,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { cn, formatDate, severityColor, statusColor, statusLabel, timeAgo } from "@/lib/utils";
+import { toast } from "@/components/ui/toast";
+import { AISparkle } from "@/components/ui/AISparkle";
 
 interface SnagFull {
   id: string;
@@ -31,7 +33,7 @@ interface SnagFull {
   aiGenerated: boolean;
   aiSummary: string | null;
   photos: { id: string; url: string; kind: string; caption: string | null }[];
-  voiceNotes: { id: string; url: string; transcript: string | null; durationMs: number | null }[];
+  voiceNotes: { id: string; url: string | null; transcript: string | null; durationMs: number | null }[];
   comments: {
     id: string;
     text: string;
@@ -90,6 +92,13 @@ export function SnagSidePanel({
     if (res.ok) {
       setSnag((curr) => (curr ? { ...curr, status: s } : curr));
       onStatusChange?.();
+      toast({
+        kind: s === "CLOSED" ? "success" : "info",
+        title: `Status → ${STATUS_OPTIONS.find((o) => o.value === s)?.label ?? s}`,
+        body: snag ? snag.code : undefined,
+      });
+    } else {
+      toast({ kind: "error", title: "Couldn't update status" });
     }
   }
 
@@ -178,9 +187,7 @@ export function SnagSidePanel({
                     <Wrench className="h-3 w-3" /> {snag.trade.name}
                   </Chip>
                 )}
-                {snag.aiGenerated && (
-                  <Chip className="bg-brand-50 text-brand-700">✦ AI draft</Chip>
-                )}
+                {snag.aiGenerated && <AISparkle />}
               </div>
             </div>
 
@@ -245,7 +252,7 @@ export function SnagSidePanel({
                       </div>
                       {snag.voiceNotes.map((v) => (
                         <div key={v.id} className="space-y-2 rounded-xl bg-slate-50 p-3">
-                          <audio controls src={v.url} className="w-full" />
+                          {v.url && <audio controls src={v.url} className="w-full" />}
                           {v.transcript && (
                             <p className="text-xs italic text-slate-600">"{v.transcript}"</p>
                           )}

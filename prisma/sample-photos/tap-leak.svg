@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <rect width="800" height="800" fill="#e8ebee"/>
+  <!-- Under-sink scene -->
+  <g fill="#cfd3d6" stroke="#9a9c9f" stroke-width="2">
+    <!-- pipes -->
+    <rect x="200" y="200" width="80" height="380" rx="6"/>
+    <rect x="520" y="200" width="80" height="380" rx="6"/>
+    <!-- joint nuts -->
+    <rect x="190" y="240" width="100" height="40" rx="6" fill="#a8acaf"/>
+    <rect x="510" y="240" width="100" height="40" rx="6" fill="#a8acaf"/>
+    <!-- bottom trap -->
+    <path d="M 240 580 Q 240 660 400 660 Q 560 660 560 580" fill="none" stroke="#9a9c9f" stroke-width="40" stroke-linecap="round"/>
+  </g>
+  <!-- The drip -->
+  <g fill="#5b9ad6" opacity="0.95">
+    <ellipse cx="240" cy="320" rx="6" ry="9"/>
+    <ellipse cx="240" cy="370" rx="7" ry="11"/>
+    <ellipse cx="240" cy="440" rx="9" ry="14"/>
+    <ellipse cx="240" cy="540" rx="11" ry="18"/>
+    <!-- pool below -->
+    <ellipse cx="240" cy="690" rx="80" ry="14" opacity="0.7"/>
+    <ellipse cx="240" cy="690" rx="120" ry="22" opacity="0.35"/>
+  </g>
+  <!-- Annotation -->
+  <g stroke="#d04545" stroke-width="3" fill="none">
+    <circle cx="240" cy="260" r="60" stroke-dasharray="6 5"/>
+  </g>
+  <text x="320" y="280" font-family="ui-sans-serif" font-size="22" fill="#9a2222" font-weight="600">Drip from cold joint</text>
+</svg>

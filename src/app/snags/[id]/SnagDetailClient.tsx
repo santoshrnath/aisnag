@@ -19,6 +19,8 @@ import {
   statusLabel,
   timeAgo,
 } from "@/lib/utils";
+import { toast } from "@/components/ui/toast";
+import { AISparkle } from "@/components/ui/AISparkle";
 
 interface SnagFull {
   id: string;
@@ -41,7 +43,7 @@ interface SnagFull {
   aiGenerated: boolean;
   aiSummary: string | null;
   photos: { id: string; url: string; kind: string; caption: string | null }[];
-  voiceNotes: { id: string; url: string; transcript: string | null }[];
+  voiceNotes: { id: string; url: string | null; transcript: string | null }[];
   comments: {
     id: string;
     text: string;
@@ -80,7 +82,16 @@ export function SnagDetailClient({ snag: initial }: { snag: SnagFull }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: s }),
     });
-    if (res.ok) setSnag((c) => ({ ...c, status: s }));
+    if (res.ok) {
+      setSnag((c) => ({ ...c, status: s }));
+      toast({
+        kind: s === "CLOSED" ? "success" : "info",
+        title: `Status → ${STATUS_OPTIONS.find((o) => o.value === s)?.label ?? s}`,
+        body: snag.code,
+      });
+    } else {
+      toast({ kind: "error", title: "Couldn't update status" });
+    }
   }
 
   async function uploadClosurePhoto(e: React.ChangeEvent<HTMLInputElement>) {
@@ -93,6 +104,9 @@ export function SnagDetailClient({ snag: initial }: { snag: SnagFull }) {
     if (res.ok) {
       const j = await res.json();
       setSnag((c) => ({ ...c, photos: [...c.photos, j.photo] }));
+      toast({ kind: "success", title: "Closure photo added" });
+    } else {
+      toast({ kind: "error", title: "Photo upload failed" });
     }
   }
 
@@ -109,6 +123,7 @@ export function SnagDetailClient({ snag: initial }: { snag: SnagFull }) {
       const j = await res.json();
       setSnag((c) => ({ ...c, comments: [...c.comments, j.comment] }));
       setComment("");
+      toast({ kind: "info", title: "Comment posted" });
     }
   }
 
@@ -127,9 +142,7 @@ export function SnagDetailClient({ snag: initial }: { snag: SnagFull }) {
               <Wrench className="h-3 w-3" /> {snag.trade.name}
             </Chip>
           )}
-          {snag.aiGenerated && (
-            <Chip className="bg-brand-50 text-brand-700">✦ AI assisted</Chip>
-          )}
+          {snag.aiGenerated && <AISparkle label="AI-assisted" />}
         </div>
 
         {/* Description */}
@@ -153,9 +166,11 @@ export function SnagDetailClient({ snag: initial }: { snag: SnagFull }) {
             </h2>
             {snag.voiceNotes.map((v) => (
               <div key={v.id} className="space-y-2">
-                <audio controls src={v.url} className="w-full" />
+                {v.url && <audio controls src={v.url} className="w-full" />}
                 {v.transcript && (
-                  <p className="text-xs italic text-slate-600">"{v.transcript}"</p>
+                  <p className="rounded-lg bg-slate-50 px-3 py-2 text-sm italic text-slate-700">
+                    "{v.transcript}"
+                  </p>
                 )}
               </div>
             ))}

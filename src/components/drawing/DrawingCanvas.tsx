@@ -26,6 +26,7 @@ import {
 import { cn, statusColor, statusLabel } from "@/lib/utils";
 import { SnagSidePanel } from "@/components/drawing/SnagSidePanel";
 import { NewSnagSheet } from "@/components/drawing/NewSnagSheet";
+import { toast } from "@/components/ui/toast";
 
 interface Pin {
   id: string;
@@ -143,6 +144,12 @@ export function DrawingCanvas({
     if (ix < 0 || ix > 1 || iy < 0 || iy > 1) return;
     setSelectedPinId(null);
     setPlacingAt({ x: ix, y: iy });
+    toast({
+      kind: "info",
+      title: "Pin dropped",
+      body: "Add a photo and Claude will draft the snag for you.",
+      durationMs: 2200,
+    });
   }
 
   // Wheel zoom around the cursor.

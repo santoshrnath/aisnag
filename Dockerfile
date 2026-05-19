@@ -29,6 +29,11 @@ RUN for i in 1 2 3 4 5 6; do \
 FROM node:20-bookworm AS builder
 WORKDIR /app
 ENV NODE_ENV=development
+# NEXT_PUBLIC_* env vars are baked into the client bundle at build time.
+# Clerk's publishable key is optional — if absent, the layout falls back
+# to anonymous demo mode and hides sign-in CTAs.
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/prisma ./prisma
 COPY . .

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <radialGradient id="g" cx="0.55" cy="0.4" r="0.85">
+      <stop offset="0%" stop-color="#f5f1ea"/>
+      <stop offset="55%" stop-color="#ece4d5"/>
+      <stop offset="100%" stop-color="#cdbfa5"/>
+    </radialGradient>
+    <filter id="grain" x="0" y="0">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" result="t"/>
+      <feColorMatrix in="t" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0"/>
+      <feComposite operator="in" in2="SourceGraphic"/>
+    </filter>
+  </defs>
+  <rect width="800" height="800" fill="url(#g)"/>
+  <!-- Patchy uneven paint blotches -->
+  <g opacity="0.55">
+    <ellipse cx="320" cy="290" rx="180" ry="85" fill="#bda687"/>
+    <ellipse cx="540" cy="430" rx="160" ry="90" fill="#c8b294"/>
+    <ellipse cx="220" cy="560" rx="200" ry="80" fill="#b89c7c"/>
+    <ellipse cx="600" cy="640" rx="140" ry="60" fill="#cbb597"/>
+  </g>
+  <!-- subtle brush strokes -->
+  <g stroke="#9c8666" stroke-width="2" opacity="0.18" fill="none">
+    <path d="M40 220 Q 400 180 760 240" />
+    <path d="M40 320 Q 400 290 760 350" />
+    <path d="M40 420 Q 400 400 760 460" />
+    <path d="M40 520 Q 400 500 760 560" />
+    <path d="M40 620 Q 400 600 760 660" />
+  </g>
+  <rect width="800" height="800" fill="white" filter="url(#grain)"/>
+  <!-- Window frame at edge — gives context -->
+  <g fill="#6b5a48">
+    <rect x="0" y="0" width="60" height="800"/>
+    <rect x="0" y="0" width="800" height="40"/>
+  </g>
+</svg>

@@ -21,6 +21,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { cn, initials } from "@/lib/utils";
+import { AuthBadge } from "@/components/shell/AuthBadge";
 
 interface NavItem {
   href: string;
@@ -114,14 +115,8 @@ export function AppShell({
             );
           })}
         </nav>
-        <div className="mt-4 flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5">
-          <Avatar name={userName} />
-          <div className="min-w-0">
-            <div className="truncate text-sm font-semibold text-ink-900">
-              {userName}
-            </div>
-            <div className="truncate text-xs text-slate-500">{userRole}</div>
-          </div>
+        <div className="mt-4">
+          <AuthBadge demoName={userName} demoRole={userRole} />
         </div>
       </aside>
 
@@ -223,14 +218,8 @@ export function AppShell({
                 );
               })}
             </nav>
-            <div className="mt-6 flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5">
-              <Avatar name={userName} />
-              <div className="min-w-0">
-                <div className="truncate text-sm font-semibold text-ink-900">
-                  {userName}
-                </div>
-                <div className="truncate text-xs text-slate-500">{userRole}</div>
-              </div>
+            <div className="mt-6">
+              <AuthBadge demoName={userName} demoRole={userRole} />
             </div>
           </div>
         </div>

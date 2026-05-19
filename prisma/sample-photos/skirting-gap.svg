@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <rect width="800" height="800" fill="#ece6dc"/>
+  <!-- Wall (upper) -->
+  <rect width="800" height="500" fill="#f3eee5"/>
+  <!-- Floor (lower) -->
+  <rect y="620" width="800" height="180" fill="#7c5535"/>
+  <g stroke="#5a3a22" stroke-width="1" opacity="0.5">
+    <line x1="0" y1="640" x2="800" y2="650"/>
+    <line x1="0" y1="680" x2="800" y2="700"/>
+    <line x1="0" y1="720" x2="800" y2="750"/>
+  </g>
+  <!-- Skirting board -->
+  <rect x="0" y="540" width="800" height="80" fill="#f8f4ec" stroke="#bcb0a0" stroke-width="2"/>
+  <line x1="0" y1="560" x2="800" y2="560" stroke="#bcb0a0" stroke-width="1.5" opacity="0.7"/>
+  <!-- The visible gap -->
+  <g>
+    <path d="M 80 540 Q 200 528 360 540 Q 520 552 700 540" stroke="#3a2d1c" stroke-width="6" fill="none" opacity="0.85"/>
+    <path d="M 80 545 Q 200 535 360 545 Q 520 555 700 545" stroke="#1a130b" stroke-width="2" fill="none"/>
+  </g>
+  <!-- Annotation -->
+  <g stroke="#d04545" stroke-width="3" fill="none">
+    <line x1="120" y1="430" x2="180" y2="510"/>
+    <polygon points="180,510 178,495 188,500" fill="#d04545"/>
+  </g>
+  <text x="60" y="420" font-family="ui-sans-serif" font-size="20" fill="#9a2222" font-weight="600">~80cm gap — re-fix &amp; caulk</text>
+</svg>

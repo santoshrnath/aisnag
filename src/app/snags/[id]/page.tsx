@@ -47,10 +47,13 @@ export default async function SnagDetailPage({
     })),
   );
   const voiceNotes = await Promise.all(
-    snag.voiceNotes.map(async (v) => ({
-      ...v,
-      url: await storage.signedUrl(v.storageKey, "audio", 3600),
-    })),
+    snag.voiceNotes.map(async (v) => {
+      const playable = v.storageKey && !v.storageKey.startsWith("__seed_");
+      return {
+        ...v,
+        url: playable ? await storage.signedUrl(v.storageKey, "audio", 3600) : null,
+      };
+    }),
   );
 
   return (

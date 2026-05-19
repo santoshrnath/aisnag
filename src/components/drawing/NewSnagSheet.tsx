@@ -12,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "@/components/ui/toast";
 
 interface PhotoDraft {
   file: File;
@@ -110,6 +111,10 @@ export function NewSnagSheet({
       form.append("file", photos[0].file);
       if (room) form.append("hint", room);
       const res = await fetch("/api/ai/photo-to-snag", { method: "POST", body: form });
+      if (res.status === 401) {
+        setAiError("Sign in to use AI photo-to-snag — it uses Anthropic credits.");
+        return;
+      }
       if (!res.ok) throw new Error(await res.text());
       const { draft } = await res.json();
       if (!draft.detected) {
@@ -124,6 +129,11 @@ export function NewSnagSheet({
       if (draft.trade && TRADES.includes(draft.trade)) setTrade(draft.trade);
       if (draft.severity) setSeverity(draft.severity);
       setAiDraftApplied(true);
+      toast({
+        kind: "ai",
+        title: "Claude drafted the snag",
+        body: `${Math.round((draft.confidence ?? 0.8) * 100)}% confident — review & edit before saving.`,
+      });
     } catch (e: any) {
       setAiError(e?.message ?? "AI failed");
     } finally {
@@ -174,6 +184,10 @@ export function NewSnagSheet({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transcript }),
       });
+      if (res.status === 401) {
+        setAiError("Sign in to use AI voice-to-snag — it uses Anthropic credits.");
+        return;
+      }
       if (!res.ok) throw new Error(await res.text());
       const { draft } = await res.json();
       setTitle(draft.title || title);
@@ -228,9 +242,14 @@ export function NewSnagSheet({
         await fetch(`/api/snags/${snag.id}/photos`, { method: "POST", body: f });
       }
 
+      toast({
+        kind: "success",
+        title: `Snag ${snag.code} raised`,
+        body: photos.length > 0 ? `${photos.length} photo${photos.length > 1 ? "s" : ""} attached.` : undefined,
+      });
       onCreated(snag);
     } catch (e: any) {
-      alert(`Failed to create snag: ${e?.message ?? "unknown"}`);
+      toast({ kind: "error", title: "Couldn't save snag", body: e?.message ?? "Unknown error" });
     } finally {
       setSubmitting(false);
     }

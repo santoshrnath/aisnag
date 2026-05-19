@@ -49,6 +49,11 @@ export function DashboardSearch({ projectId }: { projectId: string }) {
             explain: true,
           }),
         });
+        if (res.status === 401) {
+          setErr("Sign in to run AI search — it uses Anthropic credits.");
+          setResults([]);
+          return;
+        }
         if (!res.ok) throw new Error(await res.text());
         const json = await res.json();
         setResults(json.results ?? []);
@@ -111,9 +116,27 @@ export function DashboardSearch({ projectId }: { projectId: string }) {
               </div>
             )}
             {q.length < 3 && (
-              <div className="px-2 py-3 text-xs text-slate-400">
-                Type at least 3 characters. Claude reads snag titles,
-                descriptions, comments and voice transcripts.
+              <div className="space-y-2 px-2 py-3">
+                <p className="text-xs text-slate-500">
+                  Type at least 3 characters. Claude reads snag titles,
+                  descriptions, comments and voice transcripts.
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    "paint defects near windows",
+                    "loose handles on Level 6",
+                    "safety issues",
+                    "MEP snags due this week",
+                  ].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setQ(s)}
+                      className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px] text-slate-600 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
             <ul className="space-y-1.5">

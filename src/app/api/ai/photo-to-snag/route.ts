@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { photoToSnag } from "@/lib/ai/photo-to-snag";
+import { requireSignedIn } from "@/lib/require-auth";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
+  const gate = await requireSignedIn();
+  if (gate) return gate;
   try {
     const form = await req.formData();
     const file = form.get("file") as File | null;

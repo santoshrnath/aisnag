@@ -9,6 +9,7 @@ import { TradeBars } from "@/components/dashboard/TradeBars";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { DashboardSearch } from "@/components/dashboard/DashboardSearch";
 import { MyTasksStrip } from "@/components/dashboard/MyTasksStrip";
+import { OnboardingHint } from "@/components/ui/OnboardingHint";
 import {
   Bell,
   Plus,
@@ -142,6 +143,9 @@ export default async function DashboardPage() {
 
       {/* Body */}
       <div className="space-y-6 px-4 py-5 lg:px-8">
+        {/* First-visit hint (dismissable, once per browser) */}
+        <OnboardingHint />
+
         {/* Stat cards — 1 col mobile, 2 col tablet, 4 col desktop */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <StatCard

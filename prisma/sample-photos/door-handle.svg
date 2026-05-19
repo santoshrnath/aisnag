@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a87242"/>
+      <stop offset="100%" stop-color="#7c4d29"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#wood)"/>
+  <!-- Wood grain lines -->
+  <g stroke="#5e3a1d" stroke-width="2" opacity="0.35" fill="none">
+    <path d="M0 120 Q 400 80 800 130"/>
+    <path d="M0 240 Q 400 200 800 250"/>
+    <path d="M0 360 Q 400 320 800 370"/>
+    <path d="M0 480 Q 400 440 800 490"/>
+    <path d="M0 600 Q 400 560 800 610"/>
+    <path d="M0 720 Q 400 680 800 730"/>
+  </g>
+  <!-- Door handle (chrome) — loose, slightly off-axis -->
+  <g transform="translate(450 420) rotate(-12)">
+    <!-- mounting plate -->
+    <rect x="-70" y="-90" width="140" height="180" rx="8" fill="#d4d8db" stroke="#8c9094" stroke-width="2"/>
+    <circle cx="0" cy="-45" r="5" fill="#8c9094"/>
+    <circle cx="0" cy="45" r="5" fill="#8c9094"/>
+    <!-- knob -->
+    <rect x="-15" y="-15" width="160" height="30" rx="15" fill="#cfd3d6" stroke="#88898b" stroke-width="2"/>
+    <circle cx="140" cy="0" r="22" fill="#e2e4e6" stroke="#88898b" stroke-width="2"/>
+  </g>
+  <!-- Annotation: loose -->
+  <g stroke="#d04545" stroke-width="3" fill="none">
+    <circle cx="450" cy="420" r="110" stroke-dasharray="6 5"/>
+  </g>
+  <text x="100" y="160" font-family="ui-sans-serif" font-size="22" fill="#fff" font-weight="600">Loose — screws need re-tightening</text>
+</svg>

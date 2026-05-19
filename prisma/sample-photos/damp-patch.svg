@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <radialGradient id="damp" cx="0.5" cy="0.5" r="0.45">
+      <stop offset="0%" stop-color="#c4a64a" stop-opacity="0.95"/>
+      <stop offset="40%" stop-color="#d4b765" stop-opacity="0.55"/>
+      <stop offset="80%" stop-color="#e6d39b" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#f5ecd1" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="800" fill="#f5f3ee"/>
+  <!-- Subtle ceiling texture -->
+  <g fill="#cfcabf" opacity="0.4">
+    <circle cx="100" cy="80" r="1.5"/>
+    <circle cx="220" cy="120" r="1"/>
+    <circle cx="350" cy="60" r="1.5"/>
+    <circle cx="500" cy="100" r="1"/>
+    <circle cx="650" cy="80" r="1.5"/>
+    <circle cx="150" cy="700" r="1"/>
+    <circle cx="430" cy="730" r="1.5"/>
+    <circle cx="690" cy="700" r="1"/>
+  </g>
+  <!-- The damp patch -->
+  <ellipse cx="420" cy="380" rx="260" ry="200" fill="url(#damp)"/>
+  <!-- Inner darker centre -->
+  <ellipse cx="430" cy="385" rx="90" ry="60" fill="#a78832" opacity="0.5"/>
+  <ellipse cx="435" cy="385" rx="40" ry="25" fill="#7a5e1c" opacity="0.5"/>
+  <!-- Wall/ceiling join -->
+  <line x1="0" y1="60" x2="800" y2="60" stroke="#c0bbb0" stroke-width="2"/>
+  <line x1="0" y1="80" x2="800" y2="80" stroke="#c0bbb0" stroke-width="1" opacity="0.5"/>
+</svg>

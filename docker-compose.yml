@@ -15,6 +15,10 @@ services:
     build:
       context: .
       network: host
+      args:
+        # Bake the Clerk publishable key into the client bundle at build
+        # time. Optional — anonymous demo mode if absent.
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:-}
     container_name: snagpin-app
     restart: unless-stopped
     env_file: .env

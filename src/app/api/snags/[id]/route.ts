@@ -42,10 +42,15 @@ export async function GET(
     })),
   );
   const voiceNotes = await Promise.all(
-    snag.voiceNotes.map(async (v) => ({
-      ...v,
-      url: await storage.signedUrl(v.storageKey, "audio", 3600),
-    })),
+    snag.voiceNotes.map(async (v) => {
+      // Sentinel from the seed: transcript-only voice notes have no playable
+      // audio. Surface `url: null` so the client renders just the transcript.
+      const playable = v.storageKey && !v.storageKey.startsWith("__seed_");
+      return {
+        ...v,
+        url: playable ? await storage.signedUrl(v.storageKey, "audio", 3600) : null,
+      };
+    }),
   );
 
   return NextResponse.json({ snag: { ...snag, photos, voiceNotes } });
