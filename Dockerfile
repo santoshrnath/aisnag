@@ -67,6 +67,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/prisma          ./prisma
 # but the deploy scripts run schema migrations and seeds inside this same
 # container — they need the full CLI tooling.
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+# Ship the source tree + tsconfig so the seed (which imports @/lib/storage,
+# @/lib/rag/index-snag etc.) can run via tsx inside the container. The
+# server itself runs from .next/standalone — these files are CLI-time only.
+COPY --from=builder --chown=nextjs:nodejs /app/src          ./src
+COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
 
 ENV HOME=/app
 
